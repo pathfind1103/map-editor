@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Editor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
+    <style>
+        #map {
+            width: 100%;
+            height: 600px;
+            border: 1px solid black;
+        }
+        .popup {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 2px solid black;
+            padding: 10px;
+            z-index: 2000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            min-width: 200px;
+            min-height: 50px;
+        }
+        #controls {
+            margin: 10px;
+        }
+        .selected {
+            border: 2px solid blue;
+        }
+    </style>
+</head>
+<body>
+<div id="controls">
+    <select id="objectType">
+        <option value="marker">Маркер</option>
+        <option value="line">Линия</option>
+        <option value="polygon">Многоугольник</option>
+    </select>
+    <input type="text" id="objectName" placeholder="Название объекта">
+    <button onclick="startDrawing()">Добавить</button>
+    <button onclick="saveChanges()">Сохранить изменения</button>
+    <button onclick="cancelEdit()">Отменить</button>
+</div>
+<div id="map"></div>
+<div id="editPopup" class="popup">
+    <input type="text" id="editName" placeholder="Новое название">
+    <button onclick="updateObject()">Сохранить</button>
+    <button onclick="cancelEdit()">Отменить</button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+<script>
+    // Проверка загрузки OpenLayers
+    if (typeof ol === 'undefined') {
+        console.error('OpenLayers не загружен');
+    } else {
+        console.log('OpenLayers загружен успешно');
+    }
+
+    let map = new ol.Map({
+        target: 'map',
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            })
+        ],
+        view: new ol.View({
+            center: ol.proj.fromLonLat([37.6173, 55.7558]), // Москва
+            zoom: 10
+        })
+    });
+
+    // Проверка инициализации карты
+    const mapElement = document.getElementById('map');
+    if (!mapElement) {
+        console.error('Элемент #map не найден в DOM');
+    } else if (mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
+        console.error('Элемент #map имеет нулевые размеры');
+    } else {
+        console.log('Карта инициализирована, размеры:', mapElement.offsetWidth, 'x', mapElement.offsetHeight);
+    }
+
+    let drawInteraction = null;
+    let selectedFeature = null;
+    let drawSource = new ol.source.Vector();
+    let modifyInteraction = new ol.interaction.Modify({ source: drawSource });
+    let popupCoordinates = null;
+
+    // Инициализация слоя для объектов
+    const vectorLayer = new ol.layer.Vector({
+        source: drawSource,
+        style: function(feature) {
+            const type = feature.getGeometry().getType();
+            let style = new ol.style.Style({
+                fill: new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' }),
+                stroke: new ol.style.Stroke({ color: 'blue', width: 2 }),
+                image: new ol.style.Circle({
+                    radius: 7,
+                    fill: new ol.style.Fill({ color: 'red' })
+                })
+            });
+            if (type === 'Point') {
+                style.setImage(new ol.style.Circle({
+                    radius: 7,
+                    fill: new ol.style.Fill({ color: 'red' })
+                }));
+            } else if (type === 'LineString') {
+                style.getStroke().setColor('green');
+            } else if (type === 'Polygon') {
+                style.getFill().setColor('rgba(0, 255, 0, 0.2)');
+            }
+            return style;
+        }
+    });
+    map.addLayer(vectorLayer);
+    map.addInteraction(modifyInteraction);
+
+    // Загрузка объектов при старте
+    async function loadObjects() {
+        console.log('Loading objects...');
+        try {
+            const response = await fetch('http://localhost:8080/api/objects');
+            if (response.ok) {
+                const objects = await response.json();
+                drawSource.clear();
+                objects.forEach(obj => {
+                    let geometry;
+                    if (obj.type === 'marker') {
+                        geometry = new ol.geom.Point(ol.proj.fromLonLat([obj.coordinates.x, obj.coordinates.y]));
+                    } else if (obj.type === 'line') {
+                        geometry = new ol.geom.LineString(obj.coordinates.map(coord => ol.proj.fromLonLat([coord.x, coord.y])));
+                    } else if (obj.type === 'polygon') {
+                        geometry = new ol.geom.Polygon([obj.coordinates.map(coord => ol.proj.fromLonLat([coord.x, coord.y]))]);
+                    }
+                    const feature = new ol.Feature({
+                        geometry: geometry
+                    });
+                    feature.setProperties({ id: obj.id, name: obj.name, type: obj.type });
+                    drawSource.addFeature(feature);
+                });
+            } else {
+                console.log('Failed to load objects:', response.status);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+        }
+    }
+    loadObjects();
+
+    // Начало рисования
+    function startDrawing() {
+        if (drawInteraction) {
+            map.removeInteraction(drawInteraction);
+        }
+        const type = document.getElementById('objectType').value;
+        drawInteraction = new ol.interaction.Draw({
+            source: drawSource,
+            type: type === 'marker' ? 'Point' : (type === 'line' ? 'LineString' : 'Polygon')
+        });
+        map.addInteraction(drawInteraction);
+        drawInteraction.on('drawend', function(event) {
+            map.removeInteraction(drawInteraction);
+            selectedFeature = event.feature;
+            selectedFeature.setProperties({ name: document.getElementById('objectName').value || `Object_${Date.now()}` });
+            saveChanges(); // Сохраняем новый объект
+        });
+    }
+
+    // Показать попап для редактирования
+    function showEditPopup(feature) {
+        selectedFeature = feature;
+        const popup = document.getElementById('editPopup');
+        popup.style.display = 'block';
+        const geometry = feature.getGeometry();
+        const coordinates = geometry.getCoordinates();
+        popupCoordinates = geometry.getType() === 'Point' ? [ol.proj.transform(coordinates, 'EPSG:3857', 'EPSG:4326')] : coordinates.map(coord => ol.proj.transform(coord, 'EPSG:3857', 'EPSG:4326'));
+        const pixel = map.getPixelFromCoordinate(geometry.getType() === 'Point' ? coordinates : coordinates[0]);
+        const mapRect = map.getTargetElement().getBoundingClientRect();
+        const popupWidth = popup.offsetWidth || 200;
+        const popupHeight = popup.offsetHeight || 50;
+        popup.style.left = Math.max(10, Math.min(pixel[0] - popupWidth / 2, mapRect.width - popupWidth - 10)) + 'px';
+        popup.style.top = Math.max(10, pixel[1] - popupHeight) + 'px';
+        document.getElementById('editName').value = feature.get('name') || '';
+        feature.setStyle(new ol.style.Style({
+            fill: new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' }),
+            stroke: new ol.style.Stroke({ color: 'blue', width: 2 }),
+            image: new ol.style.Circle({ radius: 7, fill: new ol.style.Fill({ color: 'red' }) }),
+            zIndex: 2001
+        }).setImage(new ol.style.Circle({
+            radius: 7,
+            fill: new ol.style.Fill({ color: 'red' })
+        })));
+        feature.getGeometry().on('change', function() {
+            showEditPopup(feature);
+        });
+    }
+
+    // Обработчик окончания редактирования
+    modifyInteraction.on('modifyend', function(event) {
+        showEditPopup(event.features.getArray()[0]);
+    });
+
+    // Обновление объекта
+    function updateObject() {
+        if (selectedFeature && selectedFeature.get('id')) {
+            const newName = document.getElementById('editName').value;
+            selectedFeature.set('name', newName);
+            const geometry = selectedFeature.getGeometry();
+            const coordinates = geometry.getCoordinates();
+            const transformedCoords = geometry.getType() === 'Point' ? [ol.proj.toLonLat(coordinates)] : coordinates[0].map(coord => ol.proj.toLonLat(coord));
+            fetch(`http://localhost:8080/api/objects/${selectedFeature.get('id')}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName, type: selectedFeature.get('type'), coordinates: transformedCoords })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Объект обновлен');
+                    cancelEdit();
+                } else {
+                    throw new Error('Failed to update object');
+                }
+            }).catch(error => alert('Error: ' + error.message));
+        } else {
+            alert('Объект еще не сохранен на сервере');
+        }
+    }
+
+    // Сохранение нового объекта
+    function saveChanges() {
+        if (selectedFeature) {
+            const name = selectedFeature.get('name');
+            const geometry = selectedFeature.getGeometry();
+            const coordinates = geometry.getCoordinates();
+            const transformedCoords = geometry.getType() === 'Point' ? [ol.proj.toLonLat(coordinates)] : coordinates[0].map(coord => ol.proj.toLonLat(coord));
+            fetch('http://localhost:8080/api/objects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, type: document.getElementById('objectType').value, coordinates: transformedCoords })
+            }).then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to save object');
+                }
+            }).then(data => {
+                selectedFeature.set('id', data.id);
+                alert('Объект сохранен с ID: ' + data.id);
+                loadObjects();
+                cancelEdit();
+            }).catch(error => alert('Error: ' + error.message));
+        }
+    }
+
+    // Отмена редактирования
+    function cancelEdit() {
+        console.log('Cancel edit triggered');
+        const popup = document.getElementById('editPopup');
+        if (popup) popup.style.display = 'none';
+        selectedFeature = null;
+        popupCoordinates = null;
+        drawSource.getFeatures().forEach(feature => {
+            feature.setStyle(null);
+        });
+    }
+
+    // Слушатель клика для выбора объекта
+    map.on('click', function(event) {
+        const feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {
+            return feature;
+        });
+        if (feature) {
+            if (selectedFeature) selectedFeature.setStyle(null);
+            selectedFeature = feature;
+            showEditPopup(feature);
+        } else if (selectedFeature) {
+            selectedFeature.setStyle(null);
+            selectedFeature = null;
+            cancelEdit();
+        }
+    });
+</script>
+</body>
+</html>
