@@ -1,43 +1,4 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -47,30 +8,28 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="controls">
-        <select id="objectType">
-            <option value="marker">Маркер</option>
-            <option value="line">Линия</option>
-            <option value="polygon">Многоугольник</option>
-        </select>
-        <input type="text" id="objectName" placeholder="Название объекта">
-        <button onclick="startDrawing()">Добавить</button>
-        <button onclick="saveChanges()">Сохранить</button>
-        <button onclick="cancelEdit()">Отменить</button>
-    </div>
-    <div id="objectList">
-        <h3>Объекты</h3>
-        <ul id="objects"></ul>
-    </div>
-    <div id="map"></div>
-    <div id="editPopup" class="popup">
-        <span class="popup-close" onclick="cancelEdit()">×</span>
-        <input type="text" id="editName" placeholder="Новое название">
-        <button onclick="updateObject()">Сохранить</button>
-        <button onclick="deleteObject()">Удалить</button>
-        <button onclick="cancelEdit()">Отменить</button>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
-    <script src="map.js"></script>
+<div id="controls">
+    <select id="objectType">
+        <option value="marker">Маркер</option>
+        <option value="line">Линия</option>
+        <option value="polygon">Многоугольник</option>
+    </select>
+    <button onclick="startDrawing()">Добавить</button>
+    <button onclick="cancelEdit()">Отменить</button>
+</div>
+<div id="objectList">
+    <h3>Объекты</h3>
+    <ul id="objects"></ul>
+</div>
+<div id="map"></div>
+<div id="editPopup" class="popup">
+    <span class="popup-close" onclick="cancelEdit()">×</span>
+    <input type="text" id="editName" placeholder="Введите название объекта">
+    <button onclick="saveChanges()">Сохранить</button>
+    <button onclick="deleteObject()">Удалить</button>
+    <button onclick="cancelEdit()">Отменить</button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+<script src="map.js"></script>
 </body>
 </html>

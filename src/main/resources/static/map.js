@@ -68,8 +68,11 @@ function initMap() {
     loadObjects();
 }
 
-async function fetchWithErrorHandling(url, options) {
+async function fetchWithErrorHandling(url, options = {}) {
     try {
+        if (options && options.body) {
+            console.log('Request body:', JSON.parse(options.body));
+        }
         const response = await fetch(url, options);
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
@@ -97,7 +100,7 @@ async function loadObjects() {
                     if (typeof obj.coordinates === 'object' && 'x' in obj.coordinates && 'y' in obj.coordinates) {
                         coords = [obj.coordinates.x, obj.coordinates.y];
                     } else if (Array.isArray(obj.coordinates) && Array.isArray(obj.coordinates[0])) {
-                        coords = obj.coordinates[0]; // [[lon, lat]] -> [lon, lat]
+                        coords = obj.coordinates[0];
                     } else {
                         throw new Error(`Неподдерживаемый формат координат для маркера: ${JSON.stringify(obj.coordinates)}`);
                     }
@@ -124,11 +127,6 @@ function validateInput(input) {
 }
 
 function startDrawing() {
-    const name = document.getElementById('objectName').value;
-    if (!validateInput(name)) {
-        alert('Введите название объекта');
-        return;
-    }
     if (drawInteraction) {
         map.removeInteraction(drawInteraction);
     }
@@ -141,8 +139,8 @@ function startDrawing() {
     drawInteraction.on('drawend', (event) => {
         map.removeInteraction(drawInteraction);
         selectedFeature = event.feature;
-        selectedFeature.setProperties({ name });
-        saveChanges();
+        selectedFeature.setProperties({ type: type });
+        showEditPopup(selectedFeature);
     });
 }
 
@@ -162,6 +160,8 @@ function showEditPopup(feature) {
     document.getElementById('editName').value = feature.get('name') || '';
     feature.setStyle(styles.selected);
     feature.getGeometry().on('change', () => showEditPopup(feature));
+    const deleteButton = document.querySelector('#editPopup button[onclick="deleteObject()"]');
+    deleteButton.disabled = !feature.get('id');
 }
 
 async function updateObject() {
@@ -177,10 +177,11 @@ async function updateObject() {
         const transformedCoords = geometry.getType() === 'Point'
             ? { x: ol.proj.toLonLat(coordinates)[0], y: ol.proj.toLonLat(coordinates)[1] }
             : coordinates[0].map(coord => ({ x: ol.proj.toLonLat(coord)[0], y: ol.proj.toLonLat(coord)[1] }));
+        const type = selectedFeature.get('type') || document.getElementById('objectType').value;
         await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: newName, type: selectedFeature.get('type'), coordinates: transformedCoords })
+            body: JSON.stringify({ name: newName, type, coordinates: transformedCoords })
         });
         alert('Объект обновлён');
         cancelEdit();
@@ -202,16 +203,28 @@ async function deleteObject() {
 
 async function saveChanges() {
     if (selectedFeature) {
-        const name = selectedFeature.get('name');
+        const name = document.getElementById('editName').value;
+        if (!validateInput(name)) {
+            alert('Название не может быть пустым');
+            return;
+        }
+        const type = selectedFeature.get('type') || document.getElementById('objectType').value;
+        if (!type) {
+            alert('Тип объекта не определён');
+            return;
+        }
+        selectedFeature.set('name', name);
         const geometry = selectedFeature.getGeometry();
         const coordinates = geometry.getCoordinates();
         const transformedCoords = geometry.getType() === 'Point'
             ? { x: ol.proj.toLonLat(coordinates)[0], y: ol.proj.toLonLat(coordinates)[1] }
             : coordinates[0].map(coord => ({ x: ol.proj.toLonLat(coord)[0], y: ol.proj.toLonLat(coord)[1] }));
+        const requestBody = { name, type, coordinates: transformedCoords };
+        console.log('Saving object:', requestBody);
         const data = await fetchWithErrorHandling(CONFIG.API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, type: document.getElementById('objectType').value, coordinates: transformedCoords })
+            body: JSON.stringify(requestBody)
         });
         selectedFeature.set('id', data.id);
         alert('Объект сохранён с ID: ' + data.id);
@@ -223,6 +236,9 @@ async function saveChanges() {
 function cancelEdit() {
     const popup = document.getElementById('editPopup');
     if (popup) popup.classList.remove('show');
+    if (selectedFeature && !selectedFeature.get('id')) {
+        drawSource.removeFeature(selectedFeature);
+    }
     selectedFeature = null;
     popupCoordinates = null;
     drawSource.getFeatures().forEach(feature => feature.setStyle(null));
