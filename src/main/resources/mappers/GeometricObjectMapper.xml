@@ -9,4 +9,7 @@
         INSERT INTO geometric_objects (name, type, coordinates)
         VALUES (#{name}, #{type}, #{coordinates, jdbcType=OTHER})
     </insert>
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM geometric_objects WHERE id = #{id}
+    </delete>
 </mapper>

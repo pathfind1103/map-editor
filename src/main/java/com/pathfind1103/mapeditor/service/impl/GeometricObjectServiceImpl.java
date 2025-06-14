@@ -31,4 +31,12 @@ public class GeometricObjectServiceImpl implements GeometricObjectService {
         mapper.insert(object);
         return object;
     }
+
+    @Override
+    public void deleteById(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID is required for deletion");
+        }
+        mapper.deleteById(id);
+    }
 }

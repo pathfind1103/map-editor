@@ -22,4 +22,9 @@ public class GeometricObjectController {
     public GeometricObject create(@RequestBody GeometricObject object) {
         return service.save(object);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable Long id) {
+        service.deleteById(id);
+    }
 }

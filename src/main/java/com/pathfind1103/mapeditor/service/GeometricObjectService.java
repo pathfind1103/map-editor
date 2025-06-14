@@ -10,4 +10,5 @@ import java.util.List;
 public interface GeometricObjectService {
     List<GeometricObject> getAll();
     GeometricObject save(GeometricObject object);
+    void deleteById(Long id);
 }
