@@ -11,4 +11,6 @@ public interface GeometricObjectService {
     List<GeometricObject> getAll();
     GeometricObject save(GeometricObject object);
     void deleteById(Long id);
+
+    void update(GeometricObject object);
 }

@@ -12,6 +12,7 @@ import java.util.List;
 public class GeometricObjectServiceImpl implements GeometricObjectService {
     @Autowired
     private GeometricObjectMapper mapper;
+
     @Override
     public List<GeometricObject> getAll() {
         return mapper.selectAll();
@@ -37,6 +38,18 @@ public class GeometricObjectServiceImpl implements GeometricObjectService {
         if (id == null) {
             throw new IllegalArgumentException("ID is required for deletion");
         }
-        mapper.deleteById(id);
+        mapper.delete(id);
+    }
+
+    @Override
+    public void update(GeometricObject object) {
+        if (object == null || object.getId() == null || object.getName() == null || object.getType() == null || object.getCoordinates() == null) {
+            throw new IllegalArgumentException("ID and all fields are required for update");
+        }
+
+        if (!List.of("marker", "line", "polygon").contains(object.getType().toLowerCase())) {
+            throw new IllegalArgumentException("Type must be 'marker', 'line' or 'polygon'");
+        }
+        mapper.update(object);
     }
 }

@@ -10,5 +10,6 @@ import java.util.List;
 public interface GeometricObjectMapper {
     List<GeometricObject> selectAll();
     void insert(GeometricObject object);
-    void deleteById(Long id);
+    void delete(Long id);
+    void update(GeometricObject object);
 }

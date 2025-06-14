@@ -9,7 +9,14 @@
         INSERT INTO geometric_objects (name, type, coordinates)
         VALUES (#{name}, #{type}, #{coordinates, jdbcType=OTHER})
     </insert>
-    <delete id="deleteById" parameterType="long">
+    <delete id="delete" parameterType="long">
         DELETE FROM geometric_objects WHERE id = #{id}
     </delete>
+    <update id="update" parameterType="com.pathfind1103.mapeditor.model.GeometricObject">
+        UPDATE geometric_objects
+        SET name = #{name},
+            type = #{type},
+            coordinates = #{coordinates, jdbcType=OTHER}
+        WHERE id = #{id}
+    </update>
 </mapper>

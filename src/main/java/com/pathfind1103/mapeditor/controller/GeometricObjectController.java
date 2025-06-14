@@ -24,7 +24,17 @@ public class GeometricObjectController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable Long id) {
+    public void delete(@PathVariable Long id) {
         service.deleteById(id);
+    }
+
+    @PutMapping("/{id}")
+    public void update(@PathVariable Long id, @RequestBody GeometricObject object) {
+        if (object.getId() == null) {
+            object.setId(id);
+        } else if (!object.getId().equals(id)) {
+            throw new IllegalArgumentException("ID in path must match ID in body");
+        }
+        service.update(object);
     }
 }
