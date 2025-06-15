@@ -77,6 +77,9 @@ async function fetchWithErrorHandling(url, options = {}) {
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
         }
+        if (response.status === 204) {
+            return null;
+        }
         return await response.json();
     } catch (error) {
         console.error(`Fetch error at ${url}`, error);
@@ -139,29 +142,61 @@ function startDrawing() {
     drawInteraction.on('drawend', (event) => {
         map.removeInteraction(drawInteraction);
         selectedFeature = event.feature;
+        if (!selectedFeature) {
+            console.error('selectedFeature is undefined after drawend');
+            return;
+        }
         selectedFeature.setProperties({ type: type });
+        console.log('Drawing ended, calling showEditPopup with feature:', selectedFeature);
         showEditPopup(selectedFeature);
     });
 }
 
 function showEditPopup(feature) {
+    console.log('Entering showEditPopup with feature:', feature);
+    if (!feature || !feature.getGeometry()) {
+        console.error('Invalid feature or geometry in showEditPopup:', feature);
+        return;
+    }
     selectedFeature = feature;
     const popup = document.getElementById('editPopup');
+    if (!popup) {
+        console.error('Popup element not found');
+        return;
+    }
+    console.log('Popup element found, adding "show" class, current classList:', popup.classList);
     popup.classList.add('show');
-    const geometry = feature.getGeometry();
-    const coordinates = geometry.getCoordinates();
-    popupCoordinates = geometry.getType() === 'Point' ? [ol.proj.toLonLat(coordinates)] : coordinates[0].map(coord => ol.proj.toLonLat(coord));
-    const pixel = map.getPixelFromCoordinate(geometry.getType() === 'Point' ? coordinates : coordinates[0]);
-    const mapRect = map.getTargetElement().getBoundingClientRect();
-    const popupWidth = popup.offsetWidth || 200;
-    const popupHeight = popup.offsetHeight || 50;
-    popup.style.left = Math.max(10, Math.min(pixel[0] - popupWidth / 2, mapRect.width - popupWidth - 10)) + 'px';
-    popup.style.top = Math.max(10, pixel[1] - popupHeight) + 'px';
-    document.getElementById('editName').value = feature.get('name') || '';
-    feature.setStyle(styles.selected);
-    feature.getGeometry().on('change', () => showEditPopup(feature));
-    const deleteButton = document.querySelector('#editPopup button[onclick="deleteObject()"]');
-    deleteButton.disabled = !feature.get('id');
+    // Задержка для обновления DOM
+    setTimeout(() => {
+        const geometry = feature.getGeometry();
+        const coordinates = geometry.getCoordinates();
+        popupCoordinates = geometry.getType() === 'Point' ? [ol.proj.toLonLat(coordinates)] : coordinates[0].map(coord => ol.proj.toLonLat(coord));
+        const pixel = map.getPixelFromCoordinate(geometry.getType() === 'Point' ? coordinates : coordinates[0]);
+        if (!pixel) {
+            console.error('Failed to get pixel coordinates');
+            return;
+        }
+        console.log('Calculated pixel coordinates:', pixel);
+        const mapRect = map.getTargetElement().getBoundingClientRect();
+        console.log('Map rect:', mapRect);
+        const popupWidth = popup.offsetWidth || 200;
+        const popupHeight = popup.offsetHeight || 50;
+        const left = Math.max(10, Math.min(pixel[0] - popupWidth / 2, mapRect.width - popupWidth - 10));
+        const top = Math.max(10, pixel[1] - popupHeight);
+        popup.style.left = left + 'px';
+        popup.style.top = top + 'px';
+        console.log('Applied styles - left:', left, 'top:', top, 'width:', popupWidth, 'height:', popupHeight);
+        document.getElementById('editName').value = feature.get('name') || '';
+        feature.setStyle(styles.selected);
+        feature.getGeometry().on('change', () => showEditPopup(feature));
+        const deleteButton = document.querySelector('#editPopup button[onclick="deleteObject()"]');
+        if (deleteButton) {
+            deleteButton.disabled = !feature.get('id');
+            console.log('Delete button found, disabled:', !feature.get('id'));
+        } else {
+            console.error('Delete button not found in popup');
+        }
+    }, 0); // Задержка 0ms для следующего цикла событий
 }
 
 async function updateObject() {
@@ -192,12 +227,17 @@ async function updateObject() {
 
 async function deleteObject() {
     if (selectedFeature && selectedFeature.get('id')) {
-        await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
+        const result = await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
             method: 'DELETE'
         });
-        drawSource.removeFeature(selectedFeature);
-        alert('Объект удалён');
-        cancelEdit();
+        if (result === null) {
+            drawSource.removeFeature(selectedFeature);
+            alert('Объект удалён');
+            cancelEdit();
+            loadObjects();
+        } else {
+            alert('Неизвестный ответ от сервера');
+        }
     }
 }
 
@@ -221,14 +261,25 @@ async function saveChanges() {
             : coordinates[0].map(coord => ({ x: ol.proj.toLonLat(coord)[0], y: ol.proj.toLonLat(coord)[1] }));
         const requestBody = { name, type, coordinates: transformedCoords };
         console.log('Saving object:', requestBody);
-        const data = await fetchWithErrorHandling(CONFIG.API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
-        selectedFeature.set('id', data.id);
-        alert('Объект сохранён с ID: ' + data.id);
-        loadObjects();
+        if (selectedFeature.get('id')) {
+            // Обновление существующего объекта
+            await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: selectedFeature.get('id'), ...requestBody })
+            });
+            alert('Объект обновлён с ID: ' + selectedFeature.get('id'));
+        } else {
+            // Создание нового объекта
+            const data = await fetchWithErrorHandling(CONFIG.API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+            selectedFeature.set('id', data.id);
+            alert('Объект сохранён с ID: ' + data.id);
+        }
+        loadObjects(); // Синхронизация с сервером
         cancelEdit();
     }
 }

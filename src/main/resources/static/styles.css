@@ -52,10 +52,10 @@
 }
 
 .popup.show {
-    display: block;
-    opacity: 1;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
-
 .popup-close {
     position: absolute;
     top: 5px;
