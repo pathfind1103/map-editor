@@ -129,6 +129,7 @@ function validateInput(input) {
     return input.trim().length > 0;
 }
 
+// Измените startDrawing
 function startDrawing() {
     if (drawInteraction) {
         map.removeInteraction(drawInteraction);
@@ -138,6 +139,8 @@ function startDrawing() {
         source: drawSource,
         type: CONFIG.GEOMETRY_TYPES[type]
     });
+    // Временное отключение обработки кликов во время рисования
+    map.un('click', handleMapClick);
     map.addInteraction(drawInteraction);
     drawInteraction.on('drawend', (event) => {
         map.removeInteraction(drawInteraction);
@@ -149,13 +152,18 @@ function startDrawing() {
         selectedFeature.setProperties({ type: type });
         console.log('Drawing ended, calling showEditPopup with feature:', selectedFeature);
         showEditPopup(selectedFeature);
+        // Восстановление обработки кликов после завершения
+        setTimeout(() => map.on('click', handleMapClick), 100);
     });
 }
 
+// Измените showEditPopup
+let isPopupRendering = false;
+
 function showEditPopup(feature) {
     console.log('Entering showEditPopup with feature:', feature);
-    if (!feature || !feature.getGeometry()) {
-        console.error('Invalid feature or geometry in showEditPopup:', feature);
+    if (!feature || !feature.getGeometry() || isPopupRendering) {
+        console.warn('Invalid feature, geometry, or rendering in progress, skipping...', { feature, isPopupRendering });
         return;
     }
     selectedFeature = feature;
@@ -164,39 +172,54 @@ function showEditPopup(feature) {
         console.error('Popup element not found');
         return;
     }
-    console.log('Popup element found, adding "show" class, current classList:', popup.classList);
     popup.classList.add('show');
-    // Задержка для обновления DOM
-    setTimeout(() => {
-        const geometry = feature.getGeometry();
-        const coordinates = geometry.getCoordinates();
-        popupCoordinates = geometry.getType() === 'Point' ? [ol.proj.toLonLat(coordinates)] : coordinates[0].map(coord => ol.proj.toLonLat(coord));
-        const pixel = map.getPixelFromCoordinate(geometry.getType() === 'Point' ? coordinates : coordinates[0]);
-        if (!pixel) {
-            console.error('Failed to get pixel coordinates');
+    isPopupRendering = true;
+
+    function attemptRenderPopup(attempt = 0) {
+        const input = document.getElementById('editName');
+        const buttons = document.querySelectorAll('#editPopup button');
+        if (!input || buttons.length < 3) { // Ожидаем минимум 3 кнопки
+            if (attempt < 10) {
+                console.warn(`Popup not ready (attempt ${attempt + 1}), retrying...`);
+                setTimeout(() => attemptRenderPopup(attempt + 1), 50);
+            } else {
+                console.error('Popup rendering failed after multiple attempts.');
+                isPopupRendering = false;
+            }
             return;
         }
-        console.log('Calculated pixel coordinates:', pixel);
+
+        const geometry = feature.getGeometry();
+        const coordinates = geometry.getCoordinates();
+        popupCoordinates = geometry.getType() === 'Point'
+            ? [ol.proj.toLonLat(coordinates)]
+            : coordinates[0].map(coord => ol.proj.toLonLat(coord));
+
         const mapRect = map.getTargetElement().getBoundingClientRect();
-        console.log('Map rect:', mapRect);
         const popupWidth = popup.offsetWidth || 200;
         const popupHeight = popup.offsetHeight || 50;
-        const left = Math.max(10, Math.min(pixel[0] - popupWidth / 2, mapRect.width - popupWidth - 10));
-        const top = Math.max(10, pixel[1] - popupHeight);
-        popup.style.left = left + 'px';
-        popup.style.top = top + 'px';
+
+        const maxTop = mapRect.height - popupHeight - 10;
+        const left = mapRect.width - popupWidth - 10;
+        const top = Math.max(10, Math.min(maxTop, mapRect.bottom - popupHeight - 10 - mapRect.top));
+
+        popup.style.left = `${left}px`;
+        popup.style.top = `${top}px`;
         console.log('Applied styles - left:', left, 'top:', top, 'width:', popupWidth, 'height:', popupHeight);
-        document.getElementById('editName').value = feature.get('name') || '';
+
+        input.value = feature.get('name') || '';
         feature.setStyle(styles.selected);
-        feature.getGeometry().on('change', () => showEditPopup(feature));
+
         const deleteButton = document.querySelector('#editPopup button[onclick="deleteObject()"]');
         if (deleteButton) {
+            deleteButton.style.display = feature.get('id') ? 'inline-block' : 'none';
             deleteButton.disabled = !feature.get('id');
-            console.log('Delete button found, disabled:', !feature.get('id'));
-        } else {
-            console.error('Delete button not found in popup');
         }
-    }, 0); // Задержка 0ms для следующего цикла событий
+
+        isPopupRendering = false;
+    }
+
+    requestAnimationFrame(() => attemptRenderPopup());
 }
 
 async function updateObject() {
@@ -296,14 +319,20 @@ function cancelEdit() {
 }
 
 function handleMapClick(event) {
-    const feature = map.forEachFeatureAtPixel(event.pixel, feature => feature);
+    console.log('Handling map click at pixel:', event.pixel);
+    const feature = map.forEachFeatureAtPixel(event.pixel, feature => feature.get('id') ? feature : null);
     if (feature) {
+        console.log('Feature found at click:', feature, 'Properties:', feature.getProperties());
         if (selectedFeature) selectedFeature.setStyle(null);
         selectedFeature = feature;
-        showEditPopup(feature);
+        console.log('Selected feature set to:', selectedFeature, 'ID:', selectedFeature.get('id'), 'Name:', selectedFeature.get('name'));
+        showEditPopup(selectedFeature);
     } else if (selectedFeature) {
+        console.log('No feature with ID at click, current selectedFeature:', selectedFeature);
         selectedFeature.setStyle(null);
         cancelEdit();
+    } else {
+        console.log('No feature with ID at click and no selectedFeature');
     }
 }
 
