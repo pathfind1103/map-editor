@@ -133,34 +133,27 @@ function startDrawing(type) {
         source: drawSource,
         type: CONFIG.GEOMETRY_TYPES[type]
     });
+    map.un('click', handleMapClick); // Временное отключение кликов
     map.addInteraction(drawInteraction);
     drawInteraction.on('drawend', (event) => {
         map.removeInteraction(drawInteraction);
         selectedFeature = event.feature;
+        if (!selectedFeature) {
+            console.error('selectedFeature is undefined after drawend');
+            return;
+        }
         selectedFeature.setProperties({ type: type });
         console.log('Drawing ended, calling showEditPopup with feature:', selectedFeature);
         showEditPopup(selectedFeature);
-        document.getElementById('cancelDraw').classList.remove('show');
+        const cancelDraw = document.getElementById('cancelDraw');
+        if (cancelDraw) {
+            cancelDraw.classList.remove('show');
+        }
+        setTimeout(() => map.on('click', handleMapClick), 100); // Восстановление кликов
     });
     const cancelDraw = document.getElementById('cancelDraw');
     if (cancelDraw) {
-        console.log('Starting drawing, adding .show to cancelDraw');
         cancelDraw.classList.add('show');
-    } else {
-        console.error('cancelDraw element not found!');
-    }
-}
-
-function cancelDrawing() {
-    if (drawInteraction) {
-        map.removeInteraction(drawInteraction);
-        drawInteraction = null;
-        const cancelDraw = document.getElementById('cancelDraw');
-        if (cancelDraw) {
-            console.log('Canceling drawing, removing .show from cancelDraw');
-            cancelDraw.classList.remove('show');
-        }
-        selectedFeature = null; // Сброс выбранного объекта
     }
 }
 
@@ -195,24 +188,6 @@ function showEditPopup(feature) {
             return;
         }
 
-        const geometry = feature.getGeometry();
-        const coordinates = geometry.getCoordinates();
-        popupCoordinates = geometry.getType() === 'Point'
-            ? [ol.proj.toLonLat(coordinates)]
-            : coordinates[0].map(coord => ol.proj.toLonLat(coord));
-
-        const mapRect = map.getTargetElement().getBoundingClientRect();
-        const popupWidth = popup.offsetWidth || 200;
-        const popupHeight = popup.offsetHeight || 50;
-
-        const maxTop = mapRect.height - popupHeight - 10;
-        const left = mapRect.width - popupWidth - 10;
-        const top = Math.max(10, Math.min(maxTop, mapRect.bottom - popupHeight - 10 - mapRect.top));
-
-        popup.style.left = `${left}px`;
-        popup.style.top = `${top}px`;
-        console.log('Applied styles - left:', left, 'top:', top, 'width:', popupWidth, 'height:', popupHeight);
-
         input.value = feature.get('name') || '';
         feature.setStyle(styles.selected);
 
@@ -241,7 +216,7 @@ async function updateObject() {
         const transformedCoords = geometry.getType() === 'Point'
             ? { x: ol.proj.toLonLat(coordinates)[0], y: ol.proj.toLonLat(coordinates)[1] }
             : coordinates[0].map(coord => ({ x: ol.proj.toLonLat(coord)[0], y: ol.proj.toLonLat(coord)[1] }));
-        const type = selectedFeature.get('type') || 'marker';
+        const type = selectedFeature.get('type') || 'marker'; // Используем 'marker' как резервный тип
         await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -277,7 +252,11 @@ async function saveChanges() {
             alert('Название не может быть пустым');
             return;
         }
-        const type = selectedFeature.get('type') || 'marker';
+        const type = selectedFeature.get('type');
+        if (!type) {
+            alert('Тип объекта не определён');
+            return;
+        }
         selectedFeature.set('name', name);
         const geometry = selectedFeature.getGeometry();
         const coordinates = geometry.getCoordinates();
@@ -333,6 +312,18 @@ function handleMapClick(event) {
         cancelEdit();
     } else {
         console.log('No feature with ID at click and no selectedFeature');
+    }
+}
+
+function cancelDrawing() {
+    if (drawInteraction) {
+        map.removeInteraction(drawInteraction);
+        drawInteraction = null;
+        const cancelDraw = document.getElementById('cancelDraw');
+        if (cancelDraw) {
+            cancelDraw.classList.remove('show');
+        }
+        selectedFeature = null;
     }
 }
 
