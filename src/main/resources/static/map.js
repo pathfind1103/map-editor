@@ -143,7 +143,6 @@ async function loadObjects() {
                     'line': 'Линия',
                     'polygon': 'Область'
                 };
-                // Добавление объекта в список
                 const li = document.createElement('li');
                 li.textContent = `${obj.name}: ${typeMap[obj.type] || obj.type}`; // Новый формат: "Имя объекта: Тип объекта"
                 li.addEventListener('click', () => {

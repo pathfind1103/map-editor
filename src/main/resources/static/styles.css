@@ -235,24 +235,39 @@ input, select {
 .objects-list {
     position: fixed;
     right: -300px; /* Скрыт за пределами экрана справа */
-    top: 20px;
-    height: calc(100vh - 80px);
+    top: 20px; /* Отступ сверху как у карты */
+    height: calc(100vh - 55px); /* Высота с учетом ваших изменений */
     width: 300px;
-    background: rgba(255, 255, 255, 0.7); /* Белая полупрозрачная подложка */
-    border-radius: 10px 0 0 10px; /* Скругление левых углов */
-    padding: 20px;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); /* Тень слева */
+    background-image: url(../images/aero_glass.png), linear-gradient(rgba(48, 48, 48, 0.4), rgba(26, 26, 26, 0.4), rgba(26, 26, 26, 0.4)); /* Стеклянный эффект */
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 3px 8px; /* Тень из .glass-borders */
+    border-bottom: 1px solid #525252;
+    border-top: 1px solid #797979;
+    border-left: 1px solid #777777;
+    border-right: 1px solid #797979;
+    border-radius: 7px; /* Скругления из .glass-borders */
+    padding: 7px; /* Внутренний отступ из .glass-borders */
     transition: right 0.3s ease; /* Анимация выезда справа */
     z-index: 2000;
     overflow-y: auto; /* Прокрутка при большом количестве объектов */
 }
 
-.objects-list ul {
+.white-container {
+    background: rgba(255, 255, 255, 0.7); /* Белая подложка как раньше */
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px; /* Легкая тень для внутреннего контейнера */
+    border-radius: 6px; /* Соответствует .styled-containers */
+    padding: 15px 10px 10px 10px; /* Адаптация из .styled-containers */
+    max-width: 280px; /* Немного меньше ширины списка для отступов */
+    padding: 15px 10px 10px 10px; /* Адаптация из .styled-containers */
+    max-width: 280px; /* Немного меньше ширины списка для отступов */
+    height: calc(100% - 25px); /* Высота с учетом внешнего padding (7px сверху + 7px снизу) */
+}
+
+.white-container ul {
     list-style: none;
     padding: 0;
 }
 
-.objects-list li {
+.white-container li {
     padding: 13px 27px;
     margin-bottom: 10px;
     background: linear-gradient(135deg, rgba(144, 238, 144, 0.6) 0%, rgba(34, 139, 34, 0.6) 100%); /* Frutiger Aero зеленого цвета */
@@ -265,7 +280,7 @@ input, select {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1), inset 0 2px 5px rgba(255, 255, 255, 0.5);
 }
 
-.objects-list li:hover {
+.white-container li:hover {
     transform: scale(1.05);
     box-shadow: 0 7px 20px rgba(0, 0, 0, 0.2), inset 0 3px 7px rgba(255, 255, 255, 0.7);
 }
