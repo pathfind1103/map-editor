@@ -137,9 +137,15 @@ async function loadObjects() {
                 feature.setProperties({ id: obj.id, name: obj.name, type: obj.type });
                 drawSource.addFeature(feature);
 
+                // Обновление текста элемента списка
+                const typeMap = {
+                    'marker': 'Маркер',
+                    'line': 'Линия',
+                    'polygon': 'Область'
+                };
                 // Добавление объекта в список
                 const li = document.createElement('li');
-                li.textContent = `${obj.name} (ID: ${obj.id}, Тип: ${obj.type})`;
+                li.textContent = `${obj.name}: ${typeMap[obj.type] || obj.type}`; // Новый формат: "Имя объекта: Тип объекта"
                 li.addEventListener('click', () => {
                     map.getView().animate({
                         center: ol.proj.fromLonLat(geometry.getType() === 'Point' ? [obj.coordinates.x, obj.coordinates.y] : obj.coordinates[0].map(c => c.x)[0]),

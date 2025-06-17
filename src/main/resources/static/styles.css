@@ -235,8 +235,8 @@ input, select {
 .objects-list {
     position: fixed;
     right: -300px; /* Скрыт за пределами экрана справа */
-    top: 0;
-    height: 100vh;
+    top: 20px;
+    height: calc(100vh - 80px);
     width: 300px;
     background: rgba(255, 255, 255, 0.7); /* Белая полупрозрачная подложка */
     border-radius: 10px 0 0 10px; /* Скругление левых углов */
@@ -253,16 +253,21 @@ input, select {
 }
 
 .objects-list li {
-    padding: 10px;
+    padding: 13px 27px;
     margin-bottom: 10px;
-    background: rgba(240, 248, 255, 0.9);
-    border-radius: 5px;
+    background: linear-gradient(135deg, rgba(144, 238, 144, 0.6) 0%, rgba(34, 139, 34, 0.6) 100%); /* Frutiger Aero зеленого цвета */
+    border-radius: 15px; /* Скругленные углы в стиле Frutiger Aero */
+    color: #333;
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1), inset 0 2px 5px rgba(255, 255, 255, 0.5);
 }
 
 .objects-list li:hover {
-    background: rgba(144, 201, 232, 0.6);
+    transform: scale(1.05);
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.2), inset 0 3px 7px rgba(255, 255, 255, 0.7);
 }
 
 @media (max-width: 600px) {
