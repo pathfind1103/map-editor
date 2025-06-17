@@ -8,19 +8,6 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="controls">
-    <select id="objectType">
-        <option value="marker">Маркер</option>
-        <option value="line">Линия</option>
-        <option value="polygon">Многоугольник</option>
-    </select>
-    <button onclick="startDrawing()">Добавить</button>
-    <button onclick="cancelEdit()">Отменить</button>
-</div>
-<div id="objectList">
-    <h3>Объекты</h3>
-    <ul id="objects"></ul>
-</div>
 <div id="map"></div>
 <div id="editPopup" class="popup">
     <span class="popup-close" onclick="cancelEdit()">×</span>
@@ -28,6 +15,14 @@
     <button onclick="saveChanges()">Сохранить</button>
     <button onclick="deleteObject()">Удалить</button>
     <button onclick="cancelEdit()">Отменить</button>
+</div>
+<div id="drawControls">
+    <button onclick="startDrawing('marker')">Маркер</button>
+    <button onclick="startDrawing('line')">Линия</button>
+    <button onclick="startDrawing('polygon')">Область</button>
+</div>
+<div id="cancelDraw" class="cancel-draw" onclick="cancelDrawing()">
+    <span>×</span>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
 <script src="map.js"></script>

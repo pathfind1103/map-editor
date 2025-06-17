@@ -60,10 +60,6 @@ function initMap() {
     map.addInteraction(modifyInteraction);
     map.on('click', handleMapClick);
     modifyInteraction.on('modifyend', (event) => showEditPopup(event.features.getArray()[0]));
-    drawSource.on('change', updateObjectList);
-    map.getView().on('change', saveState);
-    document.getElementById('objectType').addEventListener('change', saveState);
-    window.addEventListener('load', loadState);
 
     loadObjects();
 }
@@ -91,7 +87,7 @@ async function fetchWithErrorHandling(url, options = {}) {
 async function loadObjects() {
     const loadingIndicator = document.createElement('div');
     loadingIndicator.textContent = 'Загрузка...';
-    document.getElementById('controls').appendChild(loadingIndicator);
+    document.body.appendChild(loadingIndicator);
     try {
         const objects = await fetchWithErrorHandling(CONFIG.API_URL);
         drawSource.clear();
@@ -129,35 +125,45 @@ function validateInput(input) {
     return input.trim().length > 0;
 }
 
-// Измените startDrawing
-function startDrawing() {
+function startDrawing(type) {
     if (drawInteraction) {
         map.removeInteraction(drawInteraction);
     }
-    const type = document.getElementById('objectType').value;
     drawInteraction = new ol.interaction.Draw({
         source: drawSource,
         type: CONFIG.GEOMETRY_TYPES[type]
     });
-    // Временное отключение обработки кликов во время рисования
-    map.un('click', handleMapClick);
     map.addInteraction(drawInteraction);
     drawInteraction.on('drawend', (event) => {
         map.removeInteraction(drawInteraction);
         selectedFeature = event.feature;
-        if (!selectedFeature) {
-            console.error('selectedFeature is undefined after drawend');
-            return;
-        }
         selectedFeature.setProperties({ type: type });
         console.log('Drawing ended, calling showEditPopup with feature:', selectedFeature);
         showEditPopup(selectedFeature);
-        // Восстановление обработки кликов после завершения
-        setTimeout(() => map.on('click', handleMapClick), 100);
+        document.getElementById('cancelDraw').classList.remove('show');
     });
+    const cancelDraw = document.getElementById('cancelDraw');
+    if (cancelDraw) {
+        console.log('Starting drawing, adding .show to cancelDraw');
+        cancelDraw.classList.add('show');
+    } else {
+        console.error('cancelDraw element not found!');
+    }
 }
 
-// Измените showEditPopup
+function cancelDrawing() {
+    if (drawInteraction) {
+        map.removeInteraction(drawInteraction);
+        drawInteraction = null;
+        const cancelDraw = document.getElementById('cancelDraw');
+        if (cancelDraw) {
+            console.log('Canceling drawing, removing .show from cancelDraw');
+            cancelDraw.classList.remove('show');
+        }
+        selectedFeature = null; // Сброс выбранного объекта
+    }
+}
+
 let isPopupRendering = false;
 
 function showEditPopup(feature) {
@@ -178,7 +184,7 @@ function showEditPopup(feature) {
     function attemptRenderPopup(attempt = 0) {
         const input = document.getElementById('editName');
         const buttons = document.querySelectorAll('#editPopup button');
-        if (!input || buttons.length < 3) { // Ожидаем минимум 3 кнопки
+        if (!input || buttons.length < 3) {
             if (attempt < 10) {
                 console.warn(`Popup not ready (attempt ${attempt + 1}), retrying...`);
                 setTimeout(() => attemptRenderPopup(attempt + 1), 50);
@@ -235,7 +241,7 @@ async function updateObject() {
         const transformedCoords = geometry.getType() === 'Point'
             ? { x: ol.proj.toLonLat(coordinates)[0], y: ol.proj.toLonLat(coordinates)[1] }
             : coordinates[0].map(coord => ({ x: ol.proj.toLonLat(coord)[0], y: ol.proj.toLonLat(coord)[1] }));
-        const type = selectedFeature.get('type') || document.getElementById('objectType').value;
+        const type = selectedFeature.get('type') || 'marker';
         await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -271,11 +277,7 @@ async function saveChanges() {
             alert('Название не может быть пустым');
             return;
         }
-        const type = selectedFeature.get('type') || document.getElementById('objectType').value;
-        if (!type) {
-            alert('Тип объекта не определён');
-            return;
-        }
+        const type = selectedFeature.get('type') || 'marker';
         selectedFeature.set('name', name);
         const geometry = selectedFeature.getGeometry();
         const coordinates = geometry.getCoordinates();
@@ -285,7 +287,6 @@ async function saveChanges() {
         const requestBody = { name, type, coordinates: transformedCoords };
         console.log('Saving object:', requestBody);
         if (selectedFeature.get('id')) {
-            // Обновление существующего объекта
             await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -293,7 +294,6 @@ async function saveChanges() {
             });
             alert('Объект обновлён с ID: ' + selectedFeature.get('id'));
         } else {
-            // Создание нового объекта
             const data = await fetchWithErrorHandling(CONFIG.API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -302,7 +302,7 @@ async function saveChanges() {
             selectedFeature.set('id', data.id);
             alert('Объект сохранён с ID: ' + data.id);
         }
-        loadObjects(); // Синхронизация с сервером
+        loadObjects();
         cancelEdit();
     }
 }
@@ -336,39 +336,6 @@ function handleMapClick(event) {
     }
 }
 
-function updateObjectList() {
-    const list = document.getElementById('objects');
-    list.innerHTML = '';
-    drawSource.getFeatures().forEach(feature => {
-        const li = document.createElement('li');
-        li.textContent = feature.get('name') || 'Без названия';
-        li.style.cursor = 'pointer';
-        li.onclick = () => {
-            map.getView().fit(feature.getGeometry().getExtent(), { duration: 500 });
-            showEditPopup(feature);
-        };
-        list.appendChild(li);
-    });
-}
-
-function saveState() {
-    localStorage.setItem('objectType', document.getElementById('objectType').value);
-    localStorage.setItem('mapView', JSON.stringify({
-        center: ol.proj.toLonLat(map.getView().getCenter()),
-        zoom: map.getView().getZoom()
-    }));
-}
-
-function loadState() {
-    const objectType = localStorage.getItem('objectType');
-    if (objectType) document.getElementById('objectType').value = objectType;
-    const viewState = JSON.parse(localStorage.getItem('mapView'));
-    if (viewState) {
-        map.getView().setCenter(ol.proj.fromLonLat(viewState.center));
-        map.getView().setZoom(viewState.zoom);
-    }
-}
-
 initMap();
 
 window.startDrawing = startDrawing;
@@ -376,3 +343,4 @@ window.saveChanges = saveChanges;
 window.cancelEdit = cancelEdit;
 window.updateObject = updateObject;
 window.deleteObject = deleteObject;
+window.cancelDrawing = cancelDrawing;

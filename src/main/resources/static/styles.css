@@ -10,38 +10,68 @@
     border: none; /* Убираем старую границу */
 }
 
-#controls {
-    margin: 10px;
+#drawControls {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    gap: 10px;
+    gap: 15px;
+    padding: 10px 20px;
+    background: rgba(240, 248, 255, 0.7);
+    border-radius: 25px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+#drawControls button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(135deg, rgba(163, 216, 244, 0.6) 0%, rgba(144, 201, 232, 0.6) 100%);
+    color: #333;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.05), inset 0 -2px 4px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+}
+
+#drawControls button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1), inset 0 -2px 6px rgba(0, 0, 0, 0.2), inset 0 4px 6px rgba(255, 255, 255, 0.7);
+}
+
+#cancelDraw {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, rgba(255, 204, 204, 0.7) 0%, rgba(255, 153, 153, 0.7) 100%);
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2), 0 3px 8px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    z-index: 2000; /* Увеличен z-index для приоритета над картой */
+    cursor: pointer;
     align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
 }
 
-#objectList {
-    margin: 10px;
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 4px;
+#cancelDraw.show {
+    display: flex;
+    /* Добавим яркий фон для отладки */
+    background: rgba(255, 153, 153, 0.9); /* Более заметный цвет */
+    border: 2px solid #ff9999; /* Контур для видимости */
 }
 
-#objectList h3 {
-    margin: 0 0 10px;
-}
-
-#objectList ul {
-    list-style: none;
-    padding: 0;
-}
-
-#objectList li {
-    padding: 5px;
-    border-bottom: 1px solid #eee;
-}
-
-#objectList li:hover {
-    background: #f5f5f5;
+#cancelDraw span {
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .popup {
@@ -62,6 +92,7 @@
     opacity: 1 !important;
     visibility: visible !important;
 }
+
 .popup-close {
     position: absolute;
     top: 5px;
@@ -98,9 +129,24 @@ input, select {
 
 @media (max-width: 600px) {
     #map {
-        height: 50vh;
+        height: 100vh;
+        border-radius: 10px;
     }
-    #controls {
-        flex-wrap: wrap;
+    #drawControls {
+        top: 15px;
+        padding: 5px 10px;
+        gap: 10px;
+    }
+    #drawControls button {
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+    #cancelDraw {
+        bottom: 10px;
+        width: 40px;
+        height: 40px;
+    }
+    #cancelDraw span {
+        font-size: 20px;
     }
 }
