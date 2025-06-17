@@ -8,7 +8,15 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="map"></div>
+<div id="map">
+    <div id="toggleObjectsListBackground"></div> <!-- Новая подложка -->
+    <button id="toggleObjectsList">→</button>
+    <div id="objectsList" class="objects-list">
+        <ul id="objectsListContent">
+            <!-- Список объектов будет заполняться динамически -->
+        </ul>
+    </div>
+</div>
 <div id="editPopup" class="popup">
     <span class="popup-close" onclick="cancelEdit()">×</span>
     <input type="text" id="editName" placeholder="Введите название объекта">

@@ -61,6 +61,28 @@ function initMap() {
     map.on('click', handleMapClick);
     modifyInteraction.on('modifyend', (event) => showEditPopup(event.features.getArray()[0]));
 
+    // В функции initMap, замените обработчик toggleButton
+    const toggleButton = document.getElementById('toggleObjectsList');
+    const objectsList = document.getElementById('objectsList');
+    const toggleBackground = document.getElementById('toggleObjectsListBackground');
+    toggleButton.addEventListener('click', () => {
+        const isOpen = objectsList.classList.toggle('show');
+        objectsList.style.transition = 'right 0.3s ease';
+        toggleButton.style.transition = 'right 0.3s ease';
+        toggleBackground.style.transition = 'right 0.3s ease'; // Синхронизация подложки
+        if (isOpen) {
+            objectsList.style.right = '0';
+            toggleButton.style.right = '331px'; // Сдвиг кнопки на ширину списка (300px) + 20px отступ
+            toggleBackground.style.right = '350px'; // Подложка смещается вместе с кнопкой
+            toggleButton.textContent = '←';
+        } else {
+            objectsList.style.right = '-300px';
+            toggleButton.style.right = '41px'; // Возвращаем на исходную позицию
+            toggleBackground.style.right = '60px'; // Подложка возвращается
+            toggleButton.textContent = '→';
+        }
+    });
+
     loadObjects();
 }
 
@@ -91,6 +113,8 @@ async function loadObjects() {
     try {
         const objects = await fetchWithErrorHandling(CONFIG.API_URL);
         drawSource.clear();
+        const objectsListContent = document.getElementById('objectsListContent');
+        objectsListContent.innerHTML = ''; // Очистка списка
         objects.forEach(obj => {
             let geometry;
             try {
@@ -112,6 +136,19 @@ async function loadObjects() {
                 const feature = new ol.Feature({ geometry });
                 feature.setProperties({ id: obj.id, name: obj.name, type: obj.type });
                 drawSource.addFeature(feature);
+
+                // Добавление объекта в список
+                const li = document.createElement('li');
+                li.textContent = `${obj.name} (ID: ${obj.id}, Тип: ${obj.type})`;
+                li.addEventListener('click', () => {
+                    map.getView().animate({
+                        center: ol.proj.fromLonLat(geometry.getType() === 'Point' ? [obj.coordinates.x, obj.coordinates.y] : obj.coordinates[0].map(c => c.x)[0]),
+                        duration: 500
+                    });
+                    selectedFeature = feature;
+                    showEditPopup(feature);
+                });
+                objectsListContent.appendChild(li);
             } catch (error) {
                 console.error(`Ошибка при обработке объекта ${obj.id}:`, error.message);
             }
@@ -224,6 +261,7 @@ async function updateObject() {
         });
         alert('Объект обновлён');
         cancelEdit();
+        loadObjects(); // Обновление списка после изменения
     } else {
         alert('Объект ещё не сохранён на сервере');
     }
@@ -238,7 +276,7 @@ async function deleteObject() {
             drawSource.removeFeature(selectedFeature);
             alert('Объект удалён');
             cancelEdit();
-            loadObjects();
+            loadObjects(); // Обновление списка после удаления
         } else {
             alert('Неизвестный ответ от сервера');
         }
@@ -281,7 +319,7 @@ async function saveChanges() {
             selectedFeature.set('id', data.id);
             alert('Объект сохранён с ID: ' + data.id);
         }
-        loadObjects();
+        loadObjects(); // Обновление списка после сохранения
         cancelEdit();
     }
 }

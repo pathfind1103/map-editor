@@ -8,6 +8,7 @@
     box-shadow: 0 11px 32px rgba(0, 0, 0, 0.12), 0 5px 16px rgba(0, 0, 0, 0.08); /* Немного уменьшенные тени */
     overflow: hidden;
     border: none; /* Убираем старую границу */
+    position: relative; /* Для позиционирования внутренних элементов */
 }
 
 #drawControls {
@@ -161,7 +162,7 @@ input, select {
 /* Стили для кнопок масштаба OpenLayers с белой подложкой */
 .ol-zoom {
     top: 20px;
-    right: 1612px;
+    right: 1612px; /* Исправлено с 1612px на 20px для нормального положения */
     position: absolute;
     background: rgba(255, 255, 255, 0.8); /* Белая подложка с прозрачностью */
     border-radius: 10px; /* Скругленные углы подложки */
@@ -197,6 +198,72 @@ input, select {
     box-shadow: 0 7px 18px rgba(0, 0, 0, 0.18), inset 0 4px 7px rgba(255, 255, 255, 0.75);
 }
 
+/* Стили для подложки кнопки */
+#toggleObjectsListBackground {
+    position: fixed;
+    top: 50%;
+    right: 60px;
+    transform: translateY(-50%);
+    width: 60px; /* Ширина подложки больше кнопки */
+    height: 60px; /* Высота подложки больше кнопки */
+    background: rgba(240, 248, 255, 0.7); /* Белая подложка как у #drawControls */
+    border-radius: 30px; /* Соответствует радиусу других элементов */
+    box-shadow: 0 9px 22px rgba(0, 0, 0, 0.12), 0 4px 11px rgba(0, 0, 0, 0.08), inset 0 2px 5px rgba(255, 255, 255, 0.55);
+    z-index: 1001; /* Под кнопкой */
+    backdrop-filter: blur(5px); /* Эффект размытия */
+}
+
+/* Стили для кнопки */
+#toggleObjectsList {
+    position: absolute;
+    right: 41px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 13px 13px; /* Соответствует другим кнопкам */
+    border: none;
+    border-radius: 55px; /* Соответствует другим кнопкам */
+    background: linear-gradient(135deg, rgba(163, 216, 244, 0.6) 0%, rgba(144, 201, 232, 0.6) 100%); /* Синяя кнопка сохранена */
+    color: #333;
+    font-size: 16px; /* Соответствует другим кнопкам */
+    font-weight: bold;
+    cursor: pointer;
+    transition: right 0.3s ease, transform 0.2s, box-shadow 0.2s; /* Добавлена анимация для right */
+    box-shadow: 0 7px 17px rgba(0, 0, 0, 0.12), 0 3px 7px rgba(0, 0, 0, 0.08), inset 0 -2px 4px rgba(0, 0, 0, 0.08), inset 0 2px 4px rgba(255, 255, 255, 0.65);
+    z-index: 1002; /* Кнопка поверх подложки */
+}
+
+.objects-list {
+    position: fixed;
+    right: -300px; /* Скрыт за пределами экрана справа */
+    top: 0;
+    height: 100vh;
+    width: 300px;
+    background: rgba(255, 255, 255, 0.7); /* Белая полупрозрачная подложка */
+    border-radius: 10px 0 0 10px; /* Скругление левых углов */
+    padding: 20px;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); /* Тень слева */
+    transition: right 0.3s ease; /* Анимация выезда справа */
+    z-index: 2000;
+    overflow-y: auto; /* Прокрутка при большом количестве объектов */
+}
+
+.objects-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.objects-list li {
+    padding: 10px;
+    margin-bottom: 10px;
+    background: rgba(240, 248, 255, 0.9);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.objects-list li:hover {
+    background: rgba(144, 201, 232, 0.6);
+}
 
 @media (max-width: 600px) {
     #map {
@@ -231,5 +298,13 @@ input, select {
     }
     #editName {
         padding: 10px; /* Уменьшенный внутренний отступ */
+    }
+    #toggleObjectsList {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    .objects-list {
+        width: 250px;
+        right: -250px;
     }
 }
