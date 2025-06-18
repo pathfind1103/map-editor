@@ -61,7 +61,6 @@ function initMap() {
     map.on('click', handleMapClick);
     modifyInteraction.on('modifyend', (event) => showEditPopup(event.features.getArray()[0]));
 
-    // В функции initMap, замените обработчик toggleButton
     const toggleButton = document.getElementById('toggleObjectsList');
     const objectsList = document.getElementById('objectsList');
     const toggleBackground = document.getElementById('toggleObjectsListBackground');
@@ -69,16 +68,16 @@ function initMap() {
         const isOpen = objectsList.classList.toggle('show');
         objectsList.style.transition = 'right 0.3s ease';
         toggleButton.style.transition = 'right 0.3s ease';
-        toggleBackground.style.transition = 'right 0.3s ease'; // Синхронизация подложки
+        toggleBackground.style.transition = 'right 0.3s ease';
         if (isOpen) {
             objectsList.style.right = '0';
-            toggleButton.style.right = '331px'; // Сдвиг кнопки на ширину списка (300px) + 20px отступ
-            toggleBackground.style.right = '350px'; // Подложка смещается вместе с кнопкой
+            toggleButton.style.right = '331px';
+            toggleBackground.style.right = '350px';
             toggleButton.textContent = '←';
         } else {
             objectsList.style.right = '-300px';
-            toggleButton.style.right = '41px'; // Возвращаем на исходную позицию
-            toggleBackground.style.right = '60px'; // Подложка возвращается
+            toggleButton.style.right = '41px';
+            toggleBackground.style.right = '60px';
             toggleButton.textContent = '→';
         }
     });
@@ -95,10 +94,15 @@ async function fetchWithErrorHandling(url, options = {}) {
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
         }
-        if (response.status === 204) {
-            return null;
+        // Для DELETE не разбираем JSON, просто возвращаем true для успешного статуса
+        if (options.method === 'DELETE' && (response.status === 200 || response.status === 204)) {
+            return true;
         }
-        return await response.json();
+        // Для других методов (POST, PUT) разбираем JSON, если есть тело
+        if (response.status !== 204) {
+            return await response.json();
+        }
+        return null;
     } catch (error) {
         console.error(`Fetch error at ${url}`, error);
         alert(`Ошибка: ${error.message}`);
@@ -114,7 +118,7 @@ async function loadObjects() {
         const objects = await fetchWithErrorHandling(CONFIG.API_URL);
         drawSource.clear();
         const objectsListContent = document.getElementById('objectsListContent');
-        objectsListContent.innerHTML = ''; // Очистка списка
+        objectsListContent.innerHTML = '';
         objects.forEach(obj => {
             let geometry;
             try {
@@ -137,14 +141,13 @@ async function loadObjects() {
                 feature.setProperties({ id: obj.id, name: obj.name, type: obj.type });
                 drawSource.addFeature(feature);
 
-                // Обновление текста элемента списка
                 const typeMap = {
                     'marker': 'Маркер',
                     'line': 'Линия',
                     'polygon': 'Область'
                 };
                 const li = document.createElement('li');
-                li.textContent = `${obj.name}: ${typeMap[obj.type] || obj.type}`; // Новый формат: "Имя объекта: Тип объекта"
+                li.textContent = `${obj.name}: ${typeMap[obj.type] || obj.type}`;
                 li.addEventListener('click', () => {
                     map.getView().animate({
                         center: ol.proj.fromLonLat(geometry.getType() === 'Point' ? [obj.coordinates.x, obj.coordinates.y] : obj.coordinates[0].map(c => c.x)[0]),
@@ -175,7 +178,7 @@ function startDrawing(type) {
         source: drawSource,
         type: CONFIG.GEOMETRY_TYPES[type]
     });
-    map.un('click', handleMapClick); // Временное отключение кликов
+    map.un('click', handleMapClick);
     map.addInteraction(drawInteraction);
     drawInteraction.on('drawend', (event) => {
         map.removeInteraction(drawInteraction);
@@ -191,7 +194,7 @@ function startDrawing(type) {
         if (cancelDraw) {
             cancelDraw.classList.remove('show');
         }
-        setTimeout(() => map.on('click', handleMapClick), 100); // Восстановление кликов
+        setTimeout(() => map.on('click', handleMapClick), 100);
     });
     const cancelDraw = document.getElementById('cancelDraw');
     if (cancelDraw) {
@@ -258,15 +261,14 @@ async function updateObject() {
         const transformedCoords = geometry.getType() === 'Point'
             ? { x: ol.proj.toLonLat(coordinates)[0], y: ol.proj.toLonLat(coordinates)[1] }
             : coordinates[0].map(coord => ({ x: ol.proj.toLonLat(coord)[0], y: ol.proj.toLonLat(coord)[1] }));
-        const type = selectedFeature.get('type') || 'marker'; // Используем 'marker' как резервный тип
+        const type = selectedFeature.get('type') || 'marker';
         await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: newName, type, coordinates: transformedCoords })
         });
-        alert('Объект обновлён');
         cancelEdit();
-        loadObjects(); // Обновление списка после изменения
+        loadObjects();
     } else {
         alert('Объект ещё не сохранён на сервере');
     }
@@ -274,16 +276,21 @@ async function updateObject() {
 
 async function deleteObject() {
     if (selectedFeature && selectedFeature.get('id')) {
-        const result = await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
-            method: 'DELETE'
-        });
-        if (result === null) {
-            drawSource.removeFeature(selectedFeature);
-            alert('Объект удалён');
-            cancelEdit();
-            loadObjects(); // Обновление списка после удаления
-        } else {
-            alert('Неизвестный ответ от сервера');
+        try {
+            const success = await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
+                method: 'DELETE'
+            });
+            if (success) { // Успешный статус 200 или 204
+                drawSource.removeFeature(selectedFeature); // Удаляем маркер с карты
+                selectedFeature.setStyle(null); // Убираем выделение
+                cancelEdit(); // Закрываем попап
+                loadObjects(); // Обновляем список объектов
+            } else {
+                alert('Неизвестный ответ от сервера');
+            }
+        } catch (error) {
+            console.error('Ошибка при удалении:', error);
+            alert(`Ошибка: ${error.message}`);
         }
     }
 }
@@ -314,7 +321,6 @@ async function saveChanges() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: selectedFeature.get('id'), ...requestBody })
             });
-            alert('Объект обновлён с ID: ' + selectedFeature.get('id'));
         } else {
             const data = await fetchWithErrorHandling(CONFIG.API_URL, {
                 method: 'POST',
@@ -322,9 +328,8 @@ async function saveChanges() {
                 body: JSON.stringify(requestBody)
             });
             selectedFeature.set('id', data.id);
-            alert('Объект сохранён с ID: ' + data.id);
         }
-        loadObjects(); // Обновление списка после сохранения
+        loadObjects();
         cancelEdit();
     }
 }
