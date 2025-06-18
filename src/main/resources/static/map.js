@@ -94,11 +94,11 @@ async function fetchWithErrorHandling(url, options = {}) {
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
         }
-        // Для DELETE не разбираем JSON, просто возвращаем true для успешного статуса
+        // Для DELETE (одиночного или массового) возвращаем true для успешного статуса
         if (options.method === 'DELETE' && (response.status === 200 || response.status === 204)) {
             return true;
         }
-        // Для PUT не разбираем JSON, если статус 204 или 200 без тела
+        // Для PUT не разбираем JSON, если статус 204 или 200
         if (options.method === 'PUT' && (response.status === 204 || response.status === 200)) {
             return true;
         }
@@ -388,6 +388,24 @@ function cancelDrawing() {
     }
 }
 
+async function deleteAllObjects() {
+    if (confirm('Вы уверены, что хотите удалить все объекты? Это действие необратимо.')) {
+        try {
+            const success = await fetchWithErrorHandling(CONFIG.API_URL, {
+                method: 'DELETE'
+            });
+            if (success) {
+                drawSource.clear(); // Очищаем все объекты с карты
+                loadObjects(); // Обновляем список объектов
+                alert('Все объекты успешно удалены.');
+            }
+        } catch (error) {
+            console.error('Ошибка при удалении всех объектов:', error);
+            alert('Произошла ошибка при удалении всех объектов.');
+        }
+    }
+}
+
 initMap();
 
 window.startDrawing = startDrawing;
@@ -396,3 +414,4 @@ window.cancelEdit = cancelEdit;
 window.updateObject = updateObject;
 window.deleteObject = deleteObject;
 window.cancelDrawing = cancelDrawing;
+window.deleteAllObjects = deleteAllObjects; // Добавлено

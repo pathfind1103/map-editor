@@ -11,5 +11,6 @@ public interface GeometricObjectMapper {
     List<GeometricObject> selectAll();
     void insert(GeometricObject object);
     void delete(Long id);
+    void deleteAll();
     void update(GeometricObject object);
 }

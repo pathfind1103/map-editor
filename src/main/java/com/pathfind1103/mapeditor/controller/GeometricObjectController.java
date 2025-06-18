@@ -28,6 +28,11 @@ public class GeometricObjectController {
         service.deleteById(id);
     }
 
+    @DeleteMapping
+    public void deleteAll() {
+        service.deleteAll();
+    }
+
     @PutMapping("/{id}")
     public void update(@PathVariable Long id, @RequestBody GeometricObject object) {
         if (object.getId() == null) {

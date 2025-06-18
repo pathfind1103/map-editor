@@ -42,6 +42,11 @@ public class GeometricObjectServiceImpl implements GeometricObjectService {
     }
 
     @Override
+    public void deleteAll() {
+        mapper.deleteAll();
+    }
+
+    @Override
     public void update(GeometricObject object) {
         if (object == null || object.getId() == null || object.getName() == null || object.getType() == null || object.getCoordinates() == null) {
             throw new IllegalArgumentException("ID and all fields are required for update");

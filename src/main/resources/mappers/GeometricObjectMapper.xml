@@ -19,4 +19,8 @@
             coordinates = #{coordinates, jdbcType=OTHER}
         WHERE id = #{id}
     </update>
+    <delete id="deleteAll">
+        DELETE FROM geometric_objects
+    </delete>
+
 </mapper>
