@@ -98,7 +98,11 @@ async function fetchWithErrorHandling(url, options = {}) {
         if (options.method === 'DELETE' && (response.status === 200 || response.status === 204)) {
             return true;
         }
-        // Для других методов (POST, PUT) разбираем JSON, если есть тело
+        // Для PUT не разбираем JSON, если статус 204 или 200 без тела
+        if (options.method === 'PUT' && (response.status === 204 || response.status === 200)) {
+            return true;
+        }
+        // Для других методов (POST) разбираем JSON, если есть тело
         if (response.status !== 204) {
             return await response.json();
         }
