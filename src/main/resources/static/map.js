@@ -154,7 +154,11 @@ async function loadObjects() {
                 li.textContent = `${obj.name}: ${typeMap[obj.type] || obj.type}`;
                 li.addEventListener('click', () => {
                     map.getView().animate({
-                        center: ol.proj.fromLonLat(geometry.getType() === 'Point' ? [obj.coordinates.x, obj.coordinates.y] : obj.coordinates[0].map(c => c.x)[0]),
+                        center: ol.proj.fromLonLat(
+                            geometry.getType() === 'Point'
+                                ? [obj.coordinates.x, obj.coordinates.y]
+                                : [obj.coordinates[0].x, obj.coordinates[0].y]
+                        ),
                         duration: 500
                     });
                     selectedFeature = feature;
