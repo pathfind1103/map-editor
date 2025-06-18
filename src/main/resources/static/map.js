@@ -310,9 +310,14 @@ async function saveChanges() {
         selectedFeature.set('name', name);
         const geometry = selectedFeature.getGeometry();
         const coordinates = geometry.getCoordinates();
-        const transformedCoords = geometry.getType() === 'Point'
-            ? { x: ol.proj.toLonLat(coordinates)[0], y: ol.proj.toLonLat(coordinates)[1] }
-            : coordinates[0].map(coord => ({ x: ol.proj.toLonLat(coord)[0], y: ol.proj.toLonLat(coord)[1] }));
+        let transformedCoords;
+        if (geometry.getType() === 'Point') {
+            transformedCoords = { x: ol.proj.toLonLat(coordinates)[0], y: ol.proj.toLonLat(coordinates)[1] };
+        } else if (geometry.getType() === 'LineString') {
+            transformedCoords = coordinates.map(coord => ({ x: ol.proj.toLonLat(coord)[0], y: ol.proj.toLonLat(coord)[1] }));
+        } else if (geometry.getType() === 'Polygon') {
+            transformedCoords = coordinates[0].map(coord => ({ x: ol.proj.toLonLat(coord)[0], y: ol.proj.toLonLat(coord)[1] }));
+        }
         const requestBody = { name, type, coordinates: transformedCoords };
         console.log('Saving object:', requestBody);
         if (selectedFeature.get('id')) {
