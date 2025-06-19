@@ -22,7 +22,7 @@ public class GeometricObjectServiceImpl implements GeometricObjectService {
     public GeometricObject save(GeometricObject object) {
         if (object == null || object.getName() == null ||
                 object.getType() == null || object.getCoordinates() == null) {
-            throw new IllegalArgumentException("All fields are requaired");
+            throw new IllegalArgumentException("All fields are required");
         }
 
         if (!List.of("marker", "line", "polygon").contains(object.getType().toLowerCase())) {
