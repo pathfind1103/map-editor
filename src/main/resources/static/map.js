@@ -12,23 +12,52 @@ const CONFIG = {
 const styles = {
     Point: new ol.style.Style({
         image: new ol.style.Circle({
-            radius: 7,
-            fill: new ol.style.Fill({ color: 'red' })
+            radius: 8,
+            fill: new ol.style.Fill({
+                color: '#c03221'
+            }),
+            stroke: new ol.style.Stroke({
+                color: '#c03221',
+                width: 2
+            })
         })
     }),
     LineString: new ol.style.Style({
-        stroke: new ol.style.Stroke({ color: 'green', width: 2 })
+        stroke: new ol.style.Stroke({
+            color: '#2196f3',
+            width: 3,
+            lineDash: [10, 5],
+            lineCap: 'round'
+        })
     }),
     Polygon: new ol.style.Style({
-        fill: new ol.style.Fill({ color: 'rgba(0, 255, 0, 0.2)' }),
-        stroke: new ol.style.Stroke({ color: 'blue', width: 2 })
+        fill: new ol.style.Fill({
+            color: 'rgba(156, 39, 176, 0.3)'
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#ab47bc',
+            width: 3,
+            lineDash: [0],
+            lineJoin: 'round'
+        })
     }),
     selected: new ol.style.Style({
-        fill: new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' }),
-        stroke: new ol.style.Stroke({ color: 'blue', width: 2 }),
+        fill: new ol.style.Fill({
+            color: 'rgba(255, 152, 0, 0.3)'
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#ff9800',
+            width: 3
+        }),
         image: new ol.style.Circle({
-            radius: 7,
-            fill: new ol.style.Fill({ color: 'red' })
+            radius: 10,
+            fill: new ol.style.Fill({
+                color: '#c03221'
+            }),
+            stroke: new ol.style.Stroke({
+                color: '#ff9999',
+                width: 2
+            })
         }),
         zIndex: 2001
     })
