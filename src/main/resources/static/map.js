@@ -382,6 +382,7 @@ function cancelEdit() {
     selectedFeature = null;
     popupCoordinates = null;
     drawSource.getFeatures().forEach(feature => feature.setStyle(null));
+    loadObjects();
 }
 
 function handleMapClick(event) {
