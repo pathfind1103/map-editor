@@ -14,11 +14,13 @@
     <button id="toggleObjectsList">→</button>
     <div id="objectsList" class="objects-list">
         <div class="white-container">
-            <ul id="objectsListContent">
-            </ul>
-            <button id="deleteAllButton" onclick="deleteAllObjects()">Удалить все</button>
+            <ul id="objectsListContent"></ul>
+            <button id="deleteAllButton" onclick="deleteAllObjects()">Удалить всё</button>
         </div>
     </div>
+    <a id="githubLink" href="https://github.com/pathfind1103/map-editor" target="_blank">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" width="32" height="32">
+    </a>
 </div>
 <div id="editPopup" class="popup">
     <span class="popup-close" onclick="cancelEdit()">×</span>
@@ -35,9 +37,6 @@
 <div id="cancelDraw" class="cancel-draw" onclick="cancelDrawing()">
     <span>×</span>
 </div>
-<a id="githubLink" href="https://github.com/pathfind1103/map-editor" target="_blank">
-    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" width="32" height="32">
-</a>
 <script src="map.js"></script>
 </body>
 </html>
