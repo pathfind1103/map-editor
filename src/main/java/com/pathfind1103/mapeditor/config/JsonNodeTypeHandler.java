@@ -10,6 +10,7 @@ import java.sql.*;
 
 public class JsonNodeTypeHandler extends BaseTypeHandler<JsonNode> {
     private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, JsonNode parameter, JdbcType jdbcType) throws SQLException {
         ps.setObject(i, parameter.toString(), Types.OTHER);

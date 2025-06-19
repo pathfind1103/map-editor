@@ -22,5 +22,4 @@
     <delete id="deleteAll">
         DELETE FROM geometric_objects
     </delete>
-
 </mapper>

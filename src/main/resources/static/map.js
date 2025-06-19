@@ -94,15 +94,12 @@ async function fetchWithErrorHandling(url, options = {}) {
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
         }
-        // Для DELETE (одиночного или массового) возвращаем true для успешного статуса
         if (options.method === 'DELETE' && (response.status === 200 || response.status === 204)) {
             return true;
         }
-        // Для PUT не разбираем JSON, если статус 204 или 200
         if (options.method === 'PUT' && (response.status === 204 || response.status === 200)) {
             return true;
         }
-        // Для других методов (POST) разбираем JSON, если есть тело
         if (response.status !== 204) {
             return await response.json();
         }
@@ -288,11 +285,11 @@ async function deleteObject() {
             const success = await fetchWithErrorHandling(`${CONFIG.API_URL}/${selectedFeature.get('id')}`, {
                 method: 'DELETE'
             });
-            if (success) { // Успешный статус 200 или 204
-                drawSource.removeFeature(selectedFeature); // Удаляем маркер с карты
-                selectedFeature.setStyle(null); // Убираем выделение
-                cancelEdit(); // Закрываем попап
-                loadObjects(); // Обновляем список объектов
+            if (success) {
+                drawSource.removeFeature(selectedFeature);
+                selectedFeature.setStyle(null);
+                cancelEdit();
+                loadObjects();
             } else {
                 alert('Неизвестный ответ от сервера');
             }
@@ -395,8 +392,8 @@ async function deleteAllObjects() {
                 method: 'DELETE'
             });
             if (success) {
-                drawSource.clear(); // Очищаем все объекты с карты
-                loadObjects(); // Обновляем список объектов
+                drawSource.clear();
+                loadObjects();
                 alert('Все объекты успешно удалены.');
             }
         } catch (error) {
@@ -414,4 +411,4 @@ window.cancelEdit = cancelEdit;
 window.updateObject = updateObject;
 window.deleteObject = deleteObject;
 window.cancelDrawing = cancelDrawing;
-window.deleteAllObjects = deleteAllObjects; // Добавлено
+window.deleteAllObjects = deleteAllObjects;

@@ -1,14 +1,14 @@
 #map {
-    width: calc(100% - 40px); /* Отступы слева и справа по 20px */
-    height: calc(100vh - 40px); /* Отступы сверху и снизу по 20px */
-    max-width: 1920px; /* Ограничение максимальной ширины для больших экранов */
-    margin: 20px auto; /* Центрирование с равными отступами */
-    border-radius: 22px; /* Немного уменьшенный радиус */
-    background: linear-gradient(135deg, #e0f2f7 0%, #f0f8ff 100%); /* Мягкий градиент в пастельных тонах */
-    box-shadow: 0 11px 32px rgba(0, 0, 0, 0.12), 0 5px 16px rgba(0, 0, 0, 0.08); /* Немного уменьшенные тени */
+    width: calc(100% - 40px);
+    height: calc(100vh - 40px);
+    max-width: 1920px;
+    margin: 20px auto;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #e0f2f7 0%, #f0f8ff 100%);
+    box-shadow: 0 11px 32px rgba(0, 0, 0, 0.12), 0 5px 16px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    border: none; /* Убираем старую границу */
-    position: relative; /* Для позиционирования внутренних элементов */
+    border: none;
+    position: relative;
 }
 
 #drawControls {
@@ -17,22 +17,22 @@
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 18px; /* Уменьшенный интервал */
-    padding: 13px 22px; /* Уменьшенный внутренний отступ */
+    gap: 18px;
+    padding: 13px 22px;
     background: rgba(240, 248, 255, 0.7);
-    border-radius: 27px; /* Немного уменьшенный радиус */
+    border-radius: 27px;
     box-shadow: 0 9px 22px rgba(0, 0, 0, 0.12), 0 4px 11px rgba(0, 0, 0, 0.08), inset 0 2px 5px rgba(255, 255, 255, 0.55);
     z-index: 1000;
     backdrop-filter: blur(5px);
 }
 
 #drawControls button {
-    padding: 13px 27px; /* Уменьшенные размеры */
+    padding: 13px 27px;
     border: none;
-    border-radius: 55px; /* Немного уменьшенный радиус */
+    border-radius: 55px;
     background: linear-gradient(135deg, rgba(163, 216, 244, 0.6) 0%, rgba(144, 201, 232, 0.6) 100%);
     color: #333;
-    font-size: 16px; /* Уменьшенный шрифт */
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -50,10 +50,10 @@
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    width: 55px; /* Уменьшенный размер */
-    height: 55px; /* Уменьшенный размер */
+    width: 55px;
+    height: 55px;
     background: linear-gradient(135deg, rgba(255, 204, 204, 0.7) 0%, rgba(255, 153, 153, 0.7) 100%);
-    border-radius: 55px; /* Немного уменьшенный радиус */
+    border-radius: 55px;
     box-shadow: 0 7px 20px rgba(0, 0, 0, 0.22), 0 3px 9px rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(255, 255, 255, 0.55);
     z-index: 2000;
     cursor: pointer;
@@ -68,7 +68,7 @@
 
 #cancelDraw span {
     color: #333;
-    font-size: 28px; /* Уменьшенный шрифт */
+    font-size: 28px;
     font-weight: bold;
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
 }
@@ -80,14 +80,14 @@
     left: 50%;
     transform: translateX(-50%);
     background: rgba(240, 248, 255, 0.7);
-    border-radius: 27px; /* Немного уменьшенный радиус */
-    padding: 13px 27px; /* Уменьшенный внутренний отступ */
+    border-radius: 27px;
+    padding: 13px 27px;
     z-index: 2000;
     box-shadow: 0 9px 22px rgba(0, 0, 0, 0.12), 0 4px 11px rgba(0, 0, 0, 0.08), inset 0 2px 5px rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(5px);
     flex-direction: column;
-    gap: 13px; /* Уменьшенный интервал */
-    min-width: 275px; /* Уменьшенная минимальная ширина */
+    gap: 13px;
+    min-width: 275px;
 }
 
 .popup.show {
@@ -97,30 +97,30 @@
 .popup-close {
     position: absolute;
     top: -1px;
-    right: 10px; /* Уменьшенный отступ */
+    right: 10px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 32px; /* Уменьшенный шрифт */
+    font-size: 32px;
     color: #333;
 }
 
 #editName {
-    padding: 13px; /* Уменьшенный внутренний отступ */
+    padding: 13px;
     border: none;
-    border-radius: 22px; /* Немного уменьшенный радиус */
+    border-radius: 22px;
     background: rgba(255, 255, 255, 0.5);
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.12);
     width: 90%;
-    font-size: 16px; /* Уменьшенный шрифт */
+    font-size: 16px;
 }
 
 .popup button {
-    padding: 13px 27px; /* Уменьшенные размеры */
+    padding: 13px 27px;
     border: none;
-    border-radius: 22px; /* Немного уменьшенный радиус */
+    border-radius: 22px;
     background: linear-gradient(135deg, rgba(163, 216, 244, 0.6) 0%, rgba(144, 201, 232, 0.6) 100%);
     color: #333;
-    font-size: 16px; /* Уменьшенный шрифт */
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -133,12 +133,12 @@
 }
 
 button {
-    padding: 10px 15px; /* Уменьшенные размеры */
+    padding: 10px 15px;
     border: none;
-    border-radius: 5px; /* Немного уменьшенный радиус */
+    border-radius: 5px;
     background: #007bff;
     color: white;
-    font-size: 14px; /* Уменьшенный шрифт */
+    font-size: 14px;
     cursor: pointer;
     transition: background 0.2s, box-shadow 0.2s;
 }
@@ -153,21 +153,20 @@ button:disabled {
 }
 
 input, select {
-    padding: 10px; /* Уменьшенный внутренний отступ */
-    border: 1.5px solid #ccc; /* Немного уменьшенная толщина границы */
-    border-radius: 5px; /* Немного уменьшенный радиус */
-    font-size: 14px; /* Уменьшенный шрифт */
+    padding: 10px;
+    border: 1.5px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
 }
 
-/* Стили для кнопок масштаба OpenLayers с белой подложкой */
 .ol-zoom {
     top: 20px;
-    right: 20x; /* Исправлено с 1612px на 20px для нормального положения */
+    right: 20x;
     position: absolute;
-    background: rgba(255, 255, 255, 0.8); /* Белая подложка с прозрачностью */
-    border-radius: 10px; /* Скругленные углы подложки */
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
     padding: 5px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.6); /* Тени и внутренний эффект */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.6);
 }
 
 .ol-zoom button {
@@ -175,8 +174,8 @@ input, select {
     height: 40px;
     margin-bottom: 5px;
     border: none;
-    border-radius: 50%; /* Круглая форма */
-    background: linear-gradient(135deg, rgba(144, 201, 232, 0.6) 0%, rgba(163, 216, 244, 0.6) 100%); /* Базовый градиент */
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(144, 201, 232, 0.6) 0%, rgba(163, 216, 244, 0.6) 100%);
     color: #333;
     font-size: 20px;
     font-weight: bold;
@@ -186,11 +185,11 @@ input, select {
 }
 
 .ol-zoom-in {
-    background: linear-gradient(135deg, rgba(144, 238, 144, 0.6) 0%, rgba(144, 238, 144, 0.6) 100%); /* Зеленый для увеличения */
+    background: linear-gradient(135deg, rgba(144, 238, 144, 0.6) 0%, rgba(144, 238, 144, 0.6) 100%);
 }
 
 .ol-zoom-out {
-    background: linear-gradient(135deg, rgba(255, 182, 193, 0.6) 0%, rgba(255, 105, 180, 0.6) 100%); /* Розовый для уменьшения */
+    background: linear-gradient(135deg, rgba(255, 182, 193, 0.6) 0%, rgba(255, 105, 180, 0.6) 100%);
 }
 
 .ol-zoom button:hover {
@@ -198,68 +197,66 @@ input, select {
     box-shadow: 0 7px 18px rgba(0, 0, 0, 0.18), inset 0 4px 7px rgba(255, 255, 255, 0.75);
 }
 
-/* Стили для подложки кнопки */
 #toggleObjectsListBackground {
     position: fixed;
     top: 50%;
     right: 60px;
     transform: translateY(-50%);
-    width: 60px; /* Ширина подложки больше кнопки */
-    height: 60px; /* Высота подложки больше кнопки */
-    background: rgba(240, 248, 255, 0.7); /* Белая подложка как у #drawControls */
-    border-radius: 30px; /* Соответствует радиусу других элементов */
+    width: 60px;
+    height: 60px;
+    background: rgba(240, 248, 255, 0.7);
+    border-radius: 30px;
     box-shadow: 0 9px 22px rgba(0, 0, 0, 0.12), 0 4px 11px rgba(0, 0, 0, 0.08), inset 0 2px 5px rgba(255, 255, 255, 0.55);
-    z-index: 1001; /* Под кнопкой */
-    backdrop-filter: blur(5px); /* Эффект размытия */
+    z-index: 1001;
+    backdrop-filter: blur(5px);
 }
 
-/* Стили для кнопки */
 #toggleObjectsList {
     position: absolute;
     right: 41px;
     top: 50%;
     transform: translateY(-50%);
-    padding: 13px 13px; /* Соответствует другим кнопкам */
+    padding: 13px 13px;
     border: none;
-    border-radius: 55px; /* Соответствует другим кнопкам */
-    background: linear-gradient(135deg, rgba(163, 216, 244, 0.6) 0%, rgba(144, 201, 232, 0.6) 100%); /* Синяя кнопка сохранена */
+    border-radius: 55px;
+    background: linear-gradient(135deg, rgba(163, 216, 244, 0.6) 0%, rgba(144, 201, 232, 0.6) 100%);
     color: #333;
-    font-size: 16px; /* Соответствует другим кнопкам */
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    transition: right 0.3s ease, transform 0.2s, box-shadow 0.2s; /* Добавлена анимация для right */
+    transition: right 0.3s ease, transform 0.2s, box-shadow 0.2s;
     box-shadow: 0 7px 17px rgba(0, 0, 0, 0.12), 0 3px 7px rgba(0, 0, 0, 0.08), inset 0 -2px 4px rgba(0, 0, 0, 0.08), inset 0 2px 4px rgba(255, 255, 255, 0.65);
-    z-index: 1002; /* Кнопка поверх подложки */
+    z-index: 1002;
 }
 
 .objects-list {
     position: fixed;
-    right: -300px; /* Скрыт за пределами экрана справа */
-    top: 20px; /* Отступ сверху как у карты */
-    height: calc(100vh - 55px); /* Высота с учетом ваших изменений */
+    right: -300px;
+    top: 20px;
+    height: calc(100vh - 55px);
     width: 300px;
-    background-image: url(../images/aero_glass.png), linear-gradient(rgba(48, 48, 48, 0.4), rgba(26, 26, 26, 0.4), rgba(26, 26, 26, 0.4)); /* Стеклянный эффект */
-    box-shadow: rgba(0, 0, 0, 0.3) 0px 3px 8px; /* Тень из .glass-borders */
+    background-image: url(../images/aero_glass.png), linear-gradient(rgba(48, 48, 48, 0.4), rgba(26, 26, 26, 0.4), rgba(26, 26, 26, 0.4));
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 3px 8px;
     border-bottom: 1px solid #525252;
     border-top: 1px solid #797979;
     border-left: 1px solid #777777;
     border-right: 1px solid #797979;
-    border-radius: 7px; /* Скругления из .glass-borders */
-    padding: 7px; /* Внутренний отступ из .glass-borders */
-    transition: right 0.3s ease; /* Анимация выезда справа */
+    border-radius: 7px;
+    padding: 7px;
+    transition: right 0.3s ease;
     z-index: 2000;
-    overflow-y: auto; /* Прокрутка при большом количестве объектов */
+    overflow-y: auto;
 }
 
 .white-container {
-    background: rgba(255, 255, 255, 0.7); /* Белая подложка как раньше */
-    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px; /* Легкая тень для внутреннего контейнера */
-    border-radius: 6px; /* Соответствует .styled-containers */
-    padding: 15px 10px 10px 10px; /* Адаптация из .styled-containers */
-    max-width: 280px; /* Немного меньше ширины списка для отступов */
-    padding: 15px 10px 10px 10px; /* Адаптация из .styled-containers */
-    max-width: 280px; /* Немного меньше ширины списка для отступов */
-    height: calc(100% - 25px); /* Высота с учетом внешнего padding (7px сверху + 7px снизу) */
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
+    border-radius: 6px;
+    padding: 15px 10px 10px 10px;
+    max-width: 280px;
+    padding: 15px 10px 10px 10px;
+    max-width: 280px;
+    height: calc(100% - 25px);
 }
 
 .white-container ul {
@@ -270,8 +267,8 @@ input, select {
 .white-container li {
     padding: 13px 27px;
     margin-bottom: 10px;
-    background: linear-gradient(135deg, rgba(144, 238, 144, 0.6) 0%, rgba(34, 139, 34, 0.6) 100%); /* Frutiger Aero зеленого цвета */
-    border-radius: 15px; /* Скругленные углы в стиле Frutiger Aero */
+    background: linear-gradient(135deg, rgba(144, 238, 144, 0.6) 0%, rgba(34, 139, 34, 0.6) 100%);
+    border-radius: 15px;
     color: #333;
     font-size: 16px;
     font-weight: bold;
@@ -299,7 +296,7 @@ input, select {
     transition: transform 0.2s, box-shadow 0.2s;
     box-shadow: 0 5px 13px rgba(0, 0, 0, 0.12), inset 0 2px 5px rgba(255, 255, 255, 0.65);
     margin-top: 10px;
-    z-index: 1; /* Убеждаемся, что кнопка поверх других элементов */
+    z-index: 1;
 }
 
 #deleteAllButton:hover {
@@ -310,36 +307,36 @@ input, select {
 @media (max-width: 600px) {
     #map {
         height: 100vh;
-        border-radius: 13px; /* Немного уменьшенный радиус */
+        border-radius: 13px;
     }
     #drawControls {
         top: 15px;
-        padding: 8px 13px; /* Уменьшенный внутренний отступ */
-        gap: 13px; /* Уменьшенный интервал */
+        padding: 8px 13px;
+        gap: 13px;
     }
     #drawControls button {
-        padding: 10px 17px; /* Уменьшенные размеры */
-        font-size: 14px; /* Уменьшенный шрифт */
+        padding: 10px 17px;
+        font-size: 14px;
     }
     #cancelDraw {
         bottom: 10px;
-        width: 45px; /* Уменьшенный размер */
-        height: 45px; /* Уменьшенный размер */
+        width: 45px;
+        height: 45px;
     }
     #cancelDraw span {
-        font-size: 22px; /* Уменьшенный шрифт */
+        font-size: 22px;
     }
     .popup {
         bottom: 10px;
-        padding: 10px 17px; /* Уменьшенный внутренний отступ */
-        min-width: 225px; /* Уменьшенная минимальная ширина */
+        padding: 10px 17px;
+        min-width: 225px;
     }
     .popup button {
-        padding: 10px 17px; /* Уменьшенные размеры */
-        font-size: 14px; /* Уменьшенный шрифт */
+        padding: 10px 17px;
+        font-size: 14px;
     }
     #editName {
-        padding: 10px; /* Уменьшенный внутренний отступ */
+        padding: 10px;
     }
     #toggleObjectsList {
         padding: 10px 20px;

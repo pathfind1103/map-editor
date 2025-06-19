@@ -9,8 +9,12 @@ import java.util.List;
 @Service
 public interface GeometricObjectService {
     List<GeometricObject> getAll();
+
     GeometricObject save(GeometricObject object);
+
     void deleteById(Long id);
+
     void deleteAll();
+
     void update(GeometricObject object);
 }
