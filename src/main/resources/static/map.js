@@ -1,5 +1,5 @@
 const CONFIG = {
-    API_URL: 'http://localhost:8080/api/objects',
+    API_URL: 'https://mapeditor.loca.lt/api/objects',
     DEFAULT_CENTER: [37.6173, 55.7558], // Москва
     DEFAULT_ZOOM: 10,
     GEOMETRY_TYPES: {
