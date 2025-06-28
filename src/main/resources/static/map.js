@@ -102,12 +102,12 @@ function initMap() {
             objectsList.style.right = '0';
             toggleButton.style.right = '331px';
             toggleBackground.style.right = '350px';
-            toggleButton.textContent = '←';
+            toggleButton.textContent = '→';
         } else {
             objectsList.style.right = '-300px';
             toggleButton.style.right = '41px';
             toggleBackground.style.right = '60px';
-            toggleButton.textContent = '→';
+            toggleButton.textContent = '←';
         }
     });
 
